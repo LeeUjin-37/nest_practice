@@ -1,0 +1,132 @@
+// import { Controller, Get, Post, Req, Res, UnauthorizedException, UseGuards } from '@nestjs/common';
+// import { ApiOperation } from '@nestjs/swagger';
+// import { AuthProvider } from '@prisma/client';
+// import type { Response } from 'express';
+// import { ApiResponse } from 'src/common/dto/api-response.dto';
+// import { OAuthLoginDTO } from 'src/domain/member/dto/member.dto';
+// import { GoogleAuthGuard } from 'src/module/auth/guard/google-auth.guard';
+// import { LocalAuthGuard } from 'src/module/auth/guard/local-auth.guard';
+// import { AuthService } from 'src/service/auth/auth.service';
+// import type { AuthRequest } from 'src/type/auth.type';
+
+// @Controller('auth')
+// export class AuthController {
+
+//   constructor(
+//         private readonly authService: AuthService
+//     ){;}
+
+//     // 로그인
+//     @ApiOperation({summary: "로그인 서비스"})
+//     @Post("login")
+//     @UseGuards(LocalAuthGuard) 
+//     // request -> guard -> local.strategy -> validate -> return -> req.user
+//     // auth login -> token 생성 -> cookie (httpOnly)
+//     async login(
+//         @Req() req:AuthRequest,
+//         @Res({passthrough: true}) res: Response
+//     ) {
+//         console.log("controller", req.user)
+
+//         const {accessToken, refreshToken} = await this.authService.login(req.user)
+
+//         // 토큰 프론트로 보내긴하는데.. 쥐도새도 모르게 프론트는 모른다.
+//         res.cookie('refreshToken', refreshToken, {
+//             httpOnly: true,
+//             path: "/",
+//             sameSite: 'lax'
+//         })
+
+//         res.cookie('accessToken', accessToken, {
+//             httpOnly: true,
+//             path: "/",
+//             sameSite: 'lax'
+//         })
+
+//         return new ApiResponse("로그인이 성공하였습니다");
+//     }
+
+//     @ApiOperation({summary: "AccessToken으로 유저의 정보를 반환"})
+//     @Get("me")
+//     async me(@Req() req:AuthRequest){
+//         const { accessToken } = req.cookies;
+//         if(!accessToken) throw new UnauthorizedException();
+
+//         const foundMember = await this.authService.me(accessToken)
+//         return new ApiResponse("회원 조회 성공", foundMember);
+//     }
+
+
+
+//     @ApiOperation({summary: "Access Token 재발급"})
+//     @Post("refresh")
+//     async refresh(
+//         @Req() req: AuthRequest,
+//         @Res({passthrough: true}) res: Response
+//     ){
+//         const { refreshToken } = req.cookies
+//         if(!refreshToken) throw new UnauthorizedException("Refresh Token이 없습니다.")
+        
+//         const { accessToken } = await this.authService.refresh(refreshToken)
+//         res.cookie('accessToken', accessToken, {
+//             httpOnly: true,
+//             path: "/",
+//             sameSite: 'lax'
+//         })
+//         return new ApiResponse("Access Token 재발급 완료")
+//     }
+
+
+//      @Get("google")
+//     @UseGuards(GoogleAuthGuard)
+//     async googleLogin(){;}
+
+//     @Get("google/callback")
+//     @UseGuards(GoogleAuthGuard)
+//     async googleCallback(
+//         @Req() req: AuthRequest,
+//         @Res({passthrough: true}) res: Response
+//     ){
+//         console.log(req.user)
+//         const user = req.user as any;
+//         const googleMember: OAuthLoginDTO = {
+//             memberEmail: user.email,
+//             memberName: user.firstName + ' ' + user.lastName,
+//             memberProfile: user.picture,
+//             memberProvider: AuthProvider.GOOGLE,
+//             memberProviderId: user.id
+//         }
+
+//         // 소셜 서비스 실행!
+//         const { status, ...others } = await this.authService.socialLogin(googleMember)
+//         if(status === "JOIN" || status === "LOGIN"){
+//             const { accessToken, refreshToken } = others;
+
+//             res.cookie('refreshToken', refreshToken, {
+//                 httpOnly: true,
+//                 path: "/",
+//                 sameSite: 'lax'
+//             })
+
+//             res.cookie('accessToken', accessToken, {
+//                 httpOnly: true,
+//                 path: "/",
+//                 sameSite: 'lax'
+//             })
+//             return res.redirect("http://localhost:3000/")
+//         }
+
+//         // 통합 계정 로그인 할 수 페이지 X
+//         return res.redirect("http://localhost:3000/auth/merge")
+//     }
+
+
+
+
+
+
+
+
+
+
+// }
