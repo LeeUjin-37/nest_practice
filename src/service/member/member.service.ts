@@ -1,7 +1,7 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { MemberRepository } from 'src/repository/member/member.repository';
 import { AuthService } from '../auth/auth.service';
-import { MemberRegisterDTO, MemberUpdateDTO, MulterFile } from 'src/domain/member/dto/member.dto';
+import { MemberRegisterDTO, MemberUpdateDTO, MulterFile, OAuthLoginDTO } from 'src/domain/member/dto/member.dto';
 import MemberException from 'src/exception/exception.member';
 import { AuthProvider } from '@prisma/client';
 import { MemberResponse } from 'src/domain/member/dto/member.response';
@@ -52,6 +52,37 @@ export class MemberService {
         return newMember;
     }
 
+
+    // 단일 회원 이메일로 조회
+    async getMemberByMemberEmail(memberEmail: string):Promise<MemberResponse | null>{
+        const member = await this.memberRepository.findMemberByMemberEmail(memberEmail);
+
+        if(member) {
+            // 새로운 객체 반환(타입 오류 해결)
+            const newMember = {
+                ...member,
+                socials: member.socials.map(({memberPassword, ...rest}) => rest)
+            }
+            return newMember; 
+        }
+        return null;
+    }
+
+    // 단일 회원 Provider로 조회
+        async getMemberByMemberProvider(socialMember: OAuthLoginDTO):Promise<MemberResponse | null>{
+        const member = await this.memberRepository.findByProvider(socialMember);
+
+        if(member) {
+            // 새로운 객체 반환(타입 오류 해결)
+            const newMember = {
+                ...member,
+                socials: member.socials.map(({memberPassword, ...rest}) => rest)
+            }
+            return newMember;
+        }
+
+        return null;
+    }
 
    // 회원 전체 목록 조회
    async getMembers(){
