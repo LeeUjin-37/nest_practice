@@ -1,3 +1,4 @@
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,25 +9,29 @@ datasource db {
 }
 
 model Member {
-  id             Int           @id @default(autoincrement())
-  memberEmail    String        @unique
-  memberName     String
-  memberAge      Int?
-  memberAddress  String?
-  memberProfile  String?
-  memberCreateAt DateTime      @default(now())
-  socials        AuthAccount[]
+    id Int @id @default(autoincrement())
+    memberEmail String @unique
+    memberName String 
+    memberAge Int?
+    memberAddress String?
+    memberProfile String?
+    memberCreateAt DateTime @default(now())
+    socials AuthAccount[]
 
-  @@map("tbl_member")
+    // 채팅 관계 매핑
+    sentMessages ChatMessage[] @relation("SentMessages")
+    receivedMessages ChatMessage[] @relation("ReceivedMessages")
+
+    @@map("tbl_member")
 }
 
 model AuthAccount {
-  id               Int          @id @default(autoincrement())
-  memberProvider   AuthProvider
+  id Int @id @default(autoincrement())
+  memberProvider AuthProvider
   memberProviderId String?
-  memberPassword   String?
-  memberId         Int
-  member           Member       @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  memberPassword String?
+  memberId Int
+  member Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
 
   @@unique([memberProviderId, memberId])
   @@map("tbl_auth_account")
@@ -38,3 +43,20 @@ enum AuthProvider {
   KAKAO
   NAVER
 }
+
+
+// 채팅 모델 추가
+model ChatMessage {
+    id Int @id @default(autoincrement())
+    fromId Int // 보낸 사람 id
+    toId Int // 받는 사람 id
+    content String @db.Text
+    createAt DateTime @default(now())
+
+    // 관계 설정
+    sender Member @relation("SentMessages", fields: [fromId], references: [id], onDelete: Cascade)
+    receiver Member @relation("ReceivedMessages", fields: [toId], references: [id], onDelete: Cascade)
+
+    @@map("tbl_chat_message")
+}
+

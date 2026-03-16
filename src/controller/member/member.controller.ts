@@ -73,5 +73,12 @@ export class MemberController {
         return new ApiResponse("회원 탈퇴가 완료되었습니다.")
     }
 
+    // 이메일로 회원 정보를 조회
+    @Get("member-id/:memberEmail")
+    async getMemberId(@Param("memberEmail") memberEmail: string){
+        const member = await this.memberService.getMemberByMemberEmail(memberEmail);
+        return {id: member?.id, memberEmail: member?.memberEmail}
+   }
+
 
 }
